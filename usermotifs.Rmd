@@ -1,0 +1,283 @@
+---
+title: "Analysis of Volunteer Motifs in Gravity Spy"
+author: "Corey Jackson"
+date: "`r Sys.time()`"
+output:
+  html_document:
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+    toc_float:
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: '5'
+always_allow_html: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+# load packages and data
+library(readr)
+library(dplyr)
+library(DT)
+library(tidytext)
+library(forcats)
+library(ggplot2)
+library(kableExtra)
+
+
+# Set objects 
+experts <- c("uber_pye","areeda","mzevin1","RF45","jrsmith02","sbc538")
+collaborators <- c("adamamiller","olipatane","smarttiz","jafeldt","mcoughlin","citizenscientist1994","cjackso3",
+                   "camallen","lmp579","sciencejedi","crowston","Carsten","jessiemcd","ejm553","srallen",
+                   "costerlu@syr.edu","lcalian","joeykey","matsoulina","trouille","zooniverse")
+moderators <- c("achilles308","futurewaves","wavewavewave","EcceruElme")
+
+user_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/user_level_motif.csv")
+user_motifs <- user_motifs[which(!user_motifs$type %in% c("otheruser","superuser") ),]
+user_motifs$type <- recode(user_motifs$type, promoted = "promoted", detractor = "notpromoted",.default = NA_character_)
+```
+
+# Methods
+  - Acquiring the dataset   
+  - Preparing the dataet   
+    - Data transformations
+    - Motif key
+  - The creation of motifs    
+  - The analysis of motifs   
+  
+## Data Attributes
+
+# Results 
+
+```{r  volunteer_motifs, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+
+### Motifs by motif
+motif_sum <- user_motifs %>% 
+  group_by(motif) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+# remove motifs with only one volunteer
+motif_sum <- motif_sum[which(motif_sum$distinct_users>1),]
+
+### Motifs by motif, level, and whether they were promoted or not
+motif_level_status_sum <- user_motifs %>% 
+  group_by(motif,level,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+# remove motifs with only one volunteer
+motif_level_status_sum <- motif_level_status_sum[which(motif_level_status_sum$distinct_users>1),]
+
+
+### Motifs by motif, level
+motif_level_sum <- user_motifs %>% 
+  group_by(motif,level) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+# remove motifs with only one volunteer
+motif_level_sum <- motif_level_sum[which(motif_level_sum$distinct_users>1),]
+
+### Motifs by motif, type
+motif_type_sum <- user_motifs %>% 
+  group_by(motif,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+# remove motifs with only one volunteer
+motif_type_sum <- motif_type_sum[which(motif_type_sum$distinct_users>1),]
+
+### ### ### ### ### ### ### ### ### ### ### ### 
+### Compute motif tfidf at different levels ### 
+### ### ### ### ### ### ### ### ### ### ### ### 
+
+motif_level_sum_tfidf <- motif_level_sum %>% bind_tf_idf(motif, level, motif_count)
+motif_type_sum_tfidf <- motif_type_sum %>% bind_tf_idf(motif, type, motif_count)
+
+#### Level 1
+um_level1 <- user_motifs[which(user_motifs$level==1),]
+motif_level1_sum <- um_level1 %>% 
+  group_by(motif,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+motif_level1_sum <- motif_level1_sum[which(motif_level1_sum$distinct_users>1),]
+### Compute l1 motif tfidf at different types
+motif_level1_sum_tfidf <- motif_level1_sum %>% bind_tf_idf(motif, type, motif_count)
+
+#### Level 2
+um_level2 <- user_motifs[which(user_motifs$level==2),]
+motif_level2_sum <- um_level2 %>% 
+  group_by(motif,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+motif_level2_sum <- motif_level2_sum[which(motif_level2_sum$distinct_users>1),]
+### Compute l2 motif tfidf at different types
+motif_level2_sum_tfidf <- motif_level2_sum %>% bind_tf_idf(motif, type, motif_count)
+
+
+#### Level 3
+um_level3 <- user_motifs[which(user_motifs$level==3),]
+motif_level3_sum <- um_level3 %>% 
+  group_by(motif,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+motif_level3_sum <- motif_level3_sum[which(motif_level3_sum$distinct_users>1),]
+### Compute l3 motif tfidf at different types
+motif_level3_sum_tfidf <- motif_level3_sum %>% bind_tf_idf(motif, type, motif_count)
+
+#### Level 4
+um_level4 <- user_motifs[which(user_motifs$level==4),]
+motif_level4_sum <- um_level4 %>% 
+  group_by(motif,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motif_count = length(motif)
+  )
+motif_level4_sum <- motif_level4_sum[which(motif_level4_sum$distinct_users>1),]
+### Compute l4 motif tfidf at different types
+motif_level4_sum_tfidf <- motif_level4_sum %>% bind_tf_idf(motif, type, motif_count)
+```
+
+## Overview of Motifs
+
+The most common motifs by level
+```{r overview, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+#top_motifs <- motif_level_sum_tfidf %>%
+#  group_by(level) %>%
+#  slice_max(tf_idf, n = 15) %>%
+#  ungroup() %>%
+#  ggplot(aes(tf_idf, fct_reorder(motif, tf_idf), fill = level)) +
+#  geom_col(show.legend = FALSE) +
+#  facet_wrap(~level, ncol = 2, scales = "free") +
+#  labs(x = "tf-idf", y = NULL)
+```
+
+### Common motifs at each level
+```{r}
+tibble(motif_level_sum_tfidf) %>%
+  kable() %>%
+  kable_styling(full_width = F) %>%
+  scroll_box(width = "800px", height = "500px")
+```
+
+### A comparison of motifs by eventual status (promoted vs. non-promoted)
+```{r}
+tibble(motif_type_sum_tfidf) %>%
+  kable() %>%
+  kable_styling(full_width = F) %>%
+  scroll_box(width = "800px", height = "500px")
+```
+
+## Take-aways at the motif level
+
+
+
+### Volunteer motifs
+```{r}
+# What modes of action. How many different motifs are present for a volunteer
+user_summary_motifs <- user_motifs %>% 
+  group_by(user_id) %>%  
+  summarize(
+    distinct_motifs = length(unique(motif)),
+    total_motifs = length(motif),
+    motif_diversiy = total_motifs/distinct_motifs
+  )
+
+### ALL MOTIFS
+user_level_motifs <- user_motifs %>% 
+  group_by(user_id,level) %>%  
+  summarize(
+    distinct_motifs = length(unique(motif)),
+    total_motifs = length(motif),
+    motif_diversiy = total_motifs/distinct_motifs
+  )
+
+##### LEVEL 1 MOTIFS ##### 
+library(data.table)
+l1user_motifs <-  data.table(user_level_motifs[which(user_level_motifs$level==1),])
+l1user_motifs <- l1user_motifs %>%  select(user_id, level, distinct_motifs, total_motifs) %>%
+ mutate(
+    distinct_motifs.s = scale(distinct_motifs),
+    total_motifs.s = scale(total_motifs),
+    motifs_diversity.s = scale(total_motifs),
+    motifs_diversity.s2 = total_motifs.s*distinct_motifs.s,
+    average.z = (distinct_motifs.s + (total_motifs.s)) / 2
+)
+
+
+### ALL MOTIFS BY TYPE
+user_level_type_motifs <- user_motifs %>% 
+  group_by(user_id,level,type) %>%  
+  summarize(
+    distinct_motifs = length(unique(motif)),
+    total_motifs = length(motif),
+    motif_diversiy = total_motifs/distinct_motifs
+  )
+
+library(data.table)
+l1usertype_motifs <-  data.table(user_level_type_motifs[which(user_level_type_motifs$level==1),])
+l1usertype_motifs <- l1usertype_motifs %>%  select(user_id, level, distinct_motifs, total_motifs, type) %>%
+ mutate(
+    distinct_motifs.s = scale(distinct_motifs),
+    total_motifs.s = scale(total_motifs),
+    motifs_diversity.s = scale(total_motifs),
+    motifs_diversity.s2 = total_motifs.s*distinct_motifs.s,
+    average.z = (distinct_motifs.s + (total_motifs.s)) / 2
+)
+
+### ALL MOTIFS BY USER in L1
+allL1motifs <- user_motifs[which(user_motifs$level==1),]
+
+allL1_summary <- allL1motifs %>% 
+  group_by(user_id,type) %>%  
+  summarize(
+    start_level = min(start_time),
+    distinct_motifs = length(unique(motif)),
+    total_motifs = length(motif),
+    motif_diversiy = total_motifs/distinct_motifs
+  )
+
+allL1_motifs_type_summary <- allL1motifs %>% 
+  group_by(user_id,motif,type) %>%  
+  summarize(
+    total_motif = length(motif)
+  )
+
+allL1_set_summary <- allL1motifs %>% 
+  group_by(user_id,set1,type) %>%  
+  summarize(
+    first_l1motif = min(start_time),
+    last_l1motif = max(start_time),
+    distinct_set_combinations = length(unique(motif)),
+    total_motif_set = length(motif)
+  )
+
+```
+
+### Common modes of action at the volunteer
+
+#### Workflow 1
+
+#### Promoted vs. non-promoted activities
+
+### Common modes of action at the volunteer/workflow level
+
+#### Workflow 1
+
+

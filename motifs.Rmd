@@ -1,0 +1,271 @@
+---
+title: "Analysis of Volunteer Motifs in Gravity Spy"
+author: "Corey Jackson"
+date: "`r Sys.time()`"
+output:
+  html_document:
+    fig_caption: yes
+    highlight: pygments
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+    toc_float:
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+always_allow_html: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+# load packages and data
+library(readr)
+library(dplyr)
+library(DT)
+
+# Set objects 
+experts <- c("uber_pye","areeda","mzevin1","RF45","jrsmith02","sbc538")
+collaborators <- c("adamamiller","olipatane","smarttiz","jafeldt","mcoughlin","citizenscientist1994","cjackso3",
+                   "camallen","lmp579","sciencejedi","crowston","Carsten","jessiemcd","ejm553","srallen",
+                   "costerlu@syr.edu","lcalian","joeykey","matsoulina","trouille","zooniverse")
+moderators <- c("achilles308","futurewaves","wavewavewave","EcceruElme")
+
+
+# Import datasets
+#### NEW DATASET
+#community_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/community_motifs.csv")
+#community_motifs$type <- recode(community_motifs$type, promoted = "promoted", detractor = "notpromoted",.default = NA_character_)
+
+#### OLD DATASET
+
+community_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/archived_motif_data/community_motifs.csv")
+community_motifs <- community_motifs[which(!community_motifs$type %in% c("promoter_wo_supers","super") ),]
+community_motifs[2] <- NULL
+community_motifs$type <- recode(community_motifs$type, promoter = "promoted", other = "notpromoted",.default = NA_character_)
+
+#### NEW DATASET
+user_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/user_motifs.csv")
+user_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/user_level_motif.csv")
+user_motifs <- user_motifs[which(!user_motifs$type %in% c("otheruser","superuser") ),]
+user_motifs$type <- recode(user_motifs$type, promoted = "promoted", detractor = "notpromoted",.default = NA_character_)
+
+#### OLD DATASET
+#user_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/archived_motif_data/user_motifs.csv")
+#user_motifs <- user_motifs[which(!user_motifs$type %in% c("promoter_wo_supers","super") ),]
+#user_motifs$type <- recode(user_motifs$type, promoter = "promoted", other = "notpromoted",.default = NA_character_)
+```
+
+# Methods
+  - Acquiring the dataset   
+  - Preparing the dataet   
+    - Data transformations
+    - Motif key
+  - The creation of motifs    
+  - The analysis of motifs   
+  
+## Data Attributes
+
+# Results 
+
+## Promotion and motifs of action
+```{r  communnity_motifs, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+
+
+# Description of datasets
+
+```
+
+The result of running x produced a dataset containing `r dim(community_motifs)[1]` motifs. We analyzed motifs by project level. At the time of analysis, Gravity Spy had four levels that correspond to classification difficulty. Our motif analysis returned `r table(community_motifs$level)[1]` motifs for Level 1 and `r table(community_motifs$level)[2]`, `r table(community_motifs$level)[3]`, and `r table(community_motifs$level)[4]` motifs for levels 2, 3, and 4 respectively. Surprisingly, the number of motifs has an inverse relationship to the number of people classifying at each level, revealing that as the task becomes more challenging, volunteers engage in varied modes of action. 
+
+  -  Common modes of action in the project. What sequences are most/least common in the dataset.  
+
+```{r}
+
+```
+
+
+### RQ1: What motifs distinguish promoted and non-promoted volunteers?
+```{r}
+```
+
+#### Level 1 Promotion
+```{r  communnity_motifsl1, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+level1 <- community_motifs[which(community_motifs$level=="1"),]
+
+level1motifs <- level1 %>% 
+  group_by(key) %>%  
+  summarize(
+    types = length(type),
+    group = ifelse(types==2,"both",ifelse(types==1,paste0(type),0)),
+    counts = sum(sum_counts),
+    user_counts = sum(user_count),
+    motif_popularity = mean(metric)
+  )
+
+popular_level1_motifs <- level1motifs %>%
+  group_by(group) %>%
+  top_n(5,motif_popularity)
+popular_level1_motifs <- data.frame(popular_level1_motifs)
+```
+
+In level 1, we find `r length(level1$key)` motifs and `r length(unique(level1$key))` unique motifs. Of the total number of motifs, `r table(level1$type)[2]` originated from volunteers who were promoted and `r table(level1$type)[1]` were from non-promoted sequences. There is overlap in sequences, that is, any one sequence may not be unique to whether a volunteer was promoted. Of the motifs, `r table(level1motifs$group)[1]` appear for both prompted and non-promoted volunteers, while `r table(level1motifs$group)[2]` and `r table(level1motifs$group)[3]` are unique to non-promoted and promoted volunteers respectively. 
+
+Next, we examined the top five motifs in terms of popularity for each of the three categories of motifs - (1) both groups, (2) not promoted, and (3) promoted. We selected these motifs based on a within group measure of popularity considering the number of times the motif appeared and the number of users having the motif in their sequence. The results of that analysis is displayed in the table below. 
+
+```{r level1table}
+datatable(popular_motifs[order(popular_motifs$group,-popular_motifs$motif_popularity),])
+```
+
+The results in the Table above reveal both common and distinct modes of action for users. 
+
+#### Level 2 Promotion
+```{r  communnity_motifsl2, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+level2 <- community_motifs[which(community_motifs$level=="2"),]
+
+level2motifs <- level2 %>% 
+  group_by(key) %>%  
+  summarize(
+    types = length(type),
+    group = ifelse(types==2,"both",ifelse(types==1,paste0(type),0)),
+    counts = sum(sum_counts),
+    user_counts = sum(user_count),
+    motif_popularity = mean(metric)
+  )
+
+popular_motifs2 <- level2motifs %>%
+  group_by(group) %>%
+  top_n(5,motif_popularity)
+
+popular_motifs2 <- data.frame(popular_motifs2)
+```
+
+In level 2, we find `r length(level2$key)` motifs and `r length(unique(level2$key))` unique motifs. Of the total number of motifs, `r table(level2$type)[2]` originated from volunteers who were promoted and `r table(level2$type)[1]` were from non-promoted sequences. There is overlap in sequences, that is, any one sequence may not be unique to whether a volunteer was promoted. Of the motifs, `r table(level2motifs$group)[1]` appear for both prompted and non-promoted volunteers, while `r table(level2motifs$group)[2]` and `r table(level2motifs$group)[3]` are unique to non-promoted and promoted volunteers respectively. 
+
+Next, we examined the top five motifs in terms of popularity for each of the three categories of motifs. The results in the Table above reveal both common and distinct modes of action for users. 
+
+```{r level2table}
+datatable(popular_motifs2[order(popular_motifs2$group,-popular_motifs2$motif_popularity),])
+```
+
+#### Level 3 Promotion
+```{r  communnity_motifsl3, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+level3 <- community_motifs[which(community_motifs$level=="3"),]
+
+level3motifs <- level3 %>% 
+  group_by(key) %>%  
+  summarize(
+    types = length(type),
+    group = ifelse(types==2,"both",ifelse(types==1,paste0(type),0)),
+    counts = sum(sum_counts),
+    user_counts = sum(user_count),
+    motif_popularity = mean(metric)
+  )
+
+popular_motifs3 <- level3motifs %>%
+  group_by(group) %>%
+  top_n(5,motif_popularity)
+
+popular_motifs3 <- data.frame(popular_motifs3)
+```
+
+In level 3, we find `r length(level3$key)` motifs and `r length(unique(level3$key))` unique motifs. Of the total number of motifs, `r table(level3$type)[2]` originated from volunteers who were promoted and `r table(level3$type)[1]` were from non-promoted sequences. There is overlap in sequences, that is, any one sequence may not be unique to whether a volunteer was promoted. Of the motifs, `r table(level3motifs$group)[1]` appear for both prompted and non-promoted volunteers, while `r table(level3motifs$group)[2]` and `r table(level3motifs$group)[3]` are unique to non-promoted and promoted volunteers respectively. 
+
+Next, we examined the top five motifs in terms of popularity for each of the three categories of motifs. The results in the Table above reveal both common and distinct modes of action for users. 
+
+```{r level3table}
+datatable(popular_motifs3[order(popular_motifs3$group,-popular_motifs3$motif_popularity),])
+```
+
+#### Level 4 Promotion
+```{r  communnity_motifsl4, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+level4 <- community_motifs[which(community_motifs$level=="4"),]
+
+level4motifs <- level4 %>% 
+  group_by(key) %>%  
+  summarize(
+    types = length(type),
+    group = ifelse(types==2,"both",ifelse(types==1,paste0(type),0)),
+    counts = sum(sum_counts),
+    user_counts = sum(user_count),
+    motif_popularity = mean(metric)
+  )
+
+popular_motifs4 <- level4motifs %>%
+  group_by(group) %>%
+  top_n(5,motif_popularity)
+
+popular_motifs4 <- data.frame(popular_motifs4)
+```
+
+In level 4, we find `r length(level4$key)` motifs and `r length(unique(level4$key))` unique motifs. Of the total number of motifs, `r table(level4$type)[2]` originated from volunteers who were promoted and `r table(level4$type)[1]` were from non-promoted sequences. There is overlap in sequences, that is, any one sequence may not be unique to whether a volunteer was promoted. Of the motifs, `r table(level4motifs$group)[1]` appear for both prompted and non-promoted volunteers, while `r table(level4motifs$group)[2]` and `r table(level4motifs$group)[3]` are unique to non-promoted and promoted volunteers respectively. 
+
+Next, we examined the top five motifs in terms of popularity for each of the three categories of motifs. The results in the Table above reveal both common and distinct modes of action for users. 
+
+```{r level4table}
+datatable(popular_motifs4[order(popular_motifs4$group,-popular_motifs4$motif_popularity),])
+```
+
+### RQ2: Is successful promotion dependent on certain motifs? 
+
+Next, we examined whether there were common activities or modes of action that occassioned promotion. We examined all
+
+## Changing modes of interaction
+```{r  volunteer_motifs, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+
+## summary of user morifs
+### table with motif counts by level
+motif_sum <- user_motifs %>% 
+  group_by(level,type) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motifs = length(motif),
+    distinct_motifs = length(unique(motif))
+  )
+
+motif_summary <- user_motifs %>% 
+  group_by(level,motif) %>%  
+  summarize(
+    distinct_users = length(unique(user_id)),
+    motifs = length(motif)
+  )
+
+
+####
+ul1 <- user_motifs[which(user_motifs$level==1),]
+ul2 <- user_motifs[which(user_motifs$level==2),]
+ul3 <- user_motifs[which(user_motifs$level==3),]
+ul4 <- user_motifs[which(user_motifs$level==4),]
+
+####
+um1 <- motif_summary[which(motif_summary$level==1),]
+um2 <- motif_summary[which(motif_summary$level==2),]
+um3 <- motif_summary[which(motif_summary$level==3),]
+um4 <- motif_summary[which(motif_summary$level==4),]
+```
+
+### RQ3: How do motifs change within subjects?  
+```{r motifsums}
+datatable(motif_sum)
+```
+
+```{r summarymotifsummary}
+datatable(motif_summary)
+```
+
+```{r usersummary, include=FALSE, warning=FALSE,message=FALSE, cache=TRUE}
+user_summary <- user_motifs %>% 
+  group_by(user_id,level,type) %>%  
+  summarize(
+    motifs = length(motif),
+    distinct_motifs = length(unique(motif)),
+    start_level = min(start_time)
+  )
+
+# compute motif popularity using tf-idf at the level
+
+# compute tf for each 
+
+```
+
