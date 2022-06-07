@@ -37,9 +37,12 @@ collaborators <- c("adamamiller","olipatane","smarttiz","jafeldt","mcoughlin","c
                    "costerlu@syr.edu","lcalian","joeykey","matsoulina","trouille","zooniverse")
 moderators <- c("achilles308","futurewaves","wavewavewave","EcceruElme")
 
-user_motifs <- read_csv("~/Box/Research/Trajectory (Motifs)/user_level_motif.csv")
+user_motifs <- read_csv("/Volumes/cbjackson2/motif/user_level_motif.csv")
 user_motifs <- user_motifs[which(!user_motifs$type %in% c("otheruser","superuser") ),]
 user_motifs$type <- recode(user_motifs$type, promoted = "promoted", detractor = "notpromoted",.default = NA_character_)
+
+
+setwd("~/Library/CloudStorage/Box-Box/_researchout") # Put outputs in shared box folder
 ```
 
 # Methods
