@@ -107,6 +107,9 @@ freq_by_rank <- project_motifs %>%
          `term frequency` = n/total) %>%
   ungroup()
 
+freq_by_rank <- freq_by_rank %>%  
+  mutate_at(6, round, 5)
+
 freq_by_rank.viz <- freq_by_rank %>% 
   ggplot(aes(rank, `term frequency`, color = level)) + 
   geom_line(size = 1.1, alpha = 0.8, show.legend = FALSE) + 
@@ -115,7 +118,9 @@ freq_by_rank.viz <- freq_by_rank %>%
 
 project_tf_idf <- project_motifs %>%
   bind_tf_idf(set1, level, n)
-
+  
+project_tf_idf <- project_tf_idf %>%  
+  mutate_at(5:7, round, 5)
 
 library(forcats)
 
