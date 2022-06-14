@@ -1,6 +1,6 @@
 ---
 title: "Analysis of Volunteer Motifs (Sets) in Gravity Spy"
-author: "Corey Jackson"
+author: ""
 date: "`r Sys.time()`"
 output:
   html_document:
@@ -135,22 +135,37 @@ project_tf_idf.viz <- project_tf_idf %>%
   theme(aspect.ratio=10/5)
 ```
 
-
 ```{r}
 datatable(freq_by_rank)
 ```
+
+__INSIGHTS__
+
+    - The most common interactions in terms of the total number of occasions in which the set of five are in level 4, the combination of {'c-chigh', 'break1', 'c-bmed'} occurs 4,463 times while the next most frequent set of five interactions is {'break1', 'c-bmed'} which occurs 2,197 occasions  
+    
+    - The most common set of five actions consist of: 
+      - Level 1: {'l1', 'c-alow', 'c-bmed'} N = 810
+      - Level 2: {'l1', 'c-alow', 'c-bmed'} N = 465
+      - Level 3: {'c-chigh', 'break1', 'c-bmed'} N = 1193
+      - Level 4: {'c-chigh', 'break1', 'c-bmed'} N = 4463
+      
+    - These motifs reveal several interesting patterns, most notably sessions of classifying and then breaks appear to dominate later levels while learning is an centeral component of activities in levels 1 and 2. The motif (order preserved) for user 65 reveals a typical pattern of activities l1,c-alow,l1,c-bmed,l1. We observe user 64 shifting between learning, classifying, learning, and classifying, and learning again. This particular sequence was observed in level 2 on 56 occassions, by 48 volunteers. 
 
 ```{r}
 datatable(project_tf_idf)
 ```
 
+
 ```{r fig.height=15, fig.width=10}
 project_tf_idf.viz
 ```
 
-### Promoted and not promoted activities
 
+__INSIGHTS__
 
+    - idf and thus tf-idf are zero for these extremely common motifs. The inverse document frequency will be a higher number for motifs that occur in fewer of the levels in the collection. So the motifs we reported in the previous section (popular modes of action) are likely to have low idf and thus low tfidf. 
+    
+    - The figure reports what are uncommon across the project, but have some importance in each level. It should be noted that many of the motifs in Levels 1 and 2 include a stop activity (meaning the user dropped out). Also, we notice many of the motifs at this stage in L1 and L2 do not include activities of socializing. 
 
 
 ## User motifs
@@ -162,7 +177,13 @@ user_summary_sets <- user_motifs %>%
     distinct_set = length(unique(set1)),
     total_sets = length(set1),
     set_diversiy = total_sets/distinct_set)
-    
+
+
+user_summary_sets_viz <- ggplot(subset(user_summary_sets,distinct_set>2), aes(x=log(total_sets), y=distinct_set)) +
+  geom_point() + 
+  labs(x = expression(~log~(Sets)), y = "Distinct Sets") + 
+  theme_minimal()
+
 
 ### ALL MOTIFS
 user_level_sets <- user_motifs %>% 
@@ -240,7 +261,13 @@ allL1_set_summary <- allL1sets %>%
   )
 ```
 
+```{r}
+datatable(user_summary_sets)
+```
 
+```{r}
+user_summary_sets_viz
+```
 
 
 
