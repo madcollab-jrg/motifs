@@ -52,11 +52,6 @@ user_performance[,c(1,9:10)] <- NULL
 names(user_performance)[c(1,3,4)] <- c("user_id","start_session","end_session")
 user_performance$user_id <- as.factor(user_performance$user_id)
 setwd("~/Desktop/GitHub Code/motifs")
-
-########################  Add promotion
-users_class <- read_csv("/Volumes/cbjackson2/motif/user_performance.csv")
-
-
 ```
 
 # Research question
@@ -98,13 +93,7 @@ user_summary_sets <- user_motifs %>%
   summarize(
     distinct_set = length(unique(set1)),
     total_sets = length(set1),
-    sessions = length(unique(start_time)),
-    set_diversiy = (total_sets/distinct_set),
-    first_set = min(start_time),
-    last_set = max(start_time), 
-    current_level = max(as.numeric(level)))%>% 
-  mutate(tenure_time =  difftime(last_set,first_set,units = "mins"),
-        status = if_else(last_set > as.Date(max(user_motifs$start_time)) %m-% months(1),"current","dropout"))
+    set_diversiy = total_sets/distinct_set)
 
 user_summary_sets_viz <- ggplot(subset(user_summary_sets,distinct_set>2), aes(x=total_sets, y=distinct_set)) +
   geom_point() + 
@@ -128,11 +117,11 @@ user_level_sets <- user_motifs %>%
   mutate(level_time =  difftime(last_lset,first_lset,units = "mins"),
          status = if_else(level=="4","current",paste0(status)))
 
+# Routine diversity in the project. What are common modes of action and which are unique?
+
 # Does routine diversity lead to increased chances of promotion
 
 # Do volunteers with similar routines perform the same
-
-# Are some motif sets associated with greater likelihood of promotion
 
 
 
@@ -202,10 +191,7 @@ allL1_set_summary <- allL1sets %>%
 # `r round( ,digits=2)` ($\sigma$ = `r round( ,digits=2)`, $\bar{x}$ = `r round( ,digits=2)`) 
 ```
 
-Our dataset contains the motifs of `r length(unique(user_summary_sets$user_id))` users. There were `r table(user_summary_sets$status)`
-users who made contributions in the month before data collection ended which means that of the users in our dataset, only `r round(table(user_summary_sets$status)[1]/dim(user_summary_sets)[1],digits=2)*100`% were active in the project. 
-
-Based on our arrangement of motifs, the average number of distinct motif sets was `r round(mean(user_summary_sets$distinct_set),digits=2)` ($\sigma$ = `r round(sd(user_summary_sets$distinct_set),digits=2)`, $\bar{x}$ = `r  round(median(user_summary_sets$distinct_set), digits=2)`) and on average `r round(mean(user_summary_sets$total_sets),digits=2)`  ($\sigma$ = `r round(sd(user_summary_sets$total_sets),digits=2)`, $\bar{x}$ = `r  round(median(user_summary_sets$total_sets), digits=2)`). A scatter plot displaying the x is included in \@ref(fig:setsfig)) 
+Our dataset contains the motifs of `r length(unique(user_summary_sets$user_id))` users Based on our arrangement of motifs, the average number of distinct motif sets was `r round(mean(user_summary_sets$distinct_set),digits=2)` ($\sigma$ = `r round(sd(user_summary_sets$distinct_set),digits=2)`, $\bar{x}$ = `r  round(median(user_summary_sets$distinct_set), digits=2)`) and on average `r round(mean(user_summary_sets$total_sets),digits=2)`  ($\sigma$ = `r round(sd(user_summary_sets$total_sets),digits=2)`, $\bar{x}$ = `r  round(median(user_summary_sets$total_sets), digits=2)`). A scatter plot displaying the x is included in \@ref(fig:setsfig)) 
 
 ```{r setsfig, fig.cap="A scatter plot showing the log.", echo=FALSE}
 user_summary_sets_viz
