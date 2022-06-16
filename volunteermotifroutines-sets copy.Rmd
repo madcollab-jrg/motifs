@@ -54,8 +54,6 @@ user_performance$user_id <- as.factor(user_performance$user_id)
 setwd("~/Desktop/GitHub Code/motifs")
 
 ########################  Add promotion
-users_class <- read_csv("/Volumes/cbjackson2/motif/user_performance.csv")
-
 
 ```
 
