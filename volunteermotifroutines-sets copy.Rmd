@@ -30,6 +30,7 @@ library(tidytext)
 library(forcats)
 library(ggplot2)
 library(kableExtra)
+library(lubridate)
 
 
 # Set objects 
