@@ -15,7 +15,7 @@ library(tidyverse)
 library(scales)
 library(correlation) # Do by level
 library(broom)
-library(MuMIn)
+library(rcompanion)
 library(stargazer)
 library(sjPlot) #http://www.strengejacke.de/sjPlot/articles/sjtlm.html 
 library(sjmisc)
@@ -57,16 +57,16 @@ motifs <- motifs[which(motifs$level>0 & motifs$level < 5 & motifs$level !=0),]
 
 motifs <- motifs %>% 
         rename("Explore" = "exploring",
-               "Discuss-H" = "viewdiscussions_high",
-               "Classify-M" = "classify_mid",
+               "DiscussH" = "viewdiscussions_high",
+               "ClassifyM" = "classify_mid",
                "Learn" = "learning",
                "Personal" = "personal",
-               "Classify-H" = "classify_high",
-               "Classify-L" = "classify_low",
+               "ClassifyH" = "classify_high",
+               "ClassifyL" = "classify_low",
                "Social" = "socialize",
-               "Discuss-M" = "viewdiscussions_normal",
-               "Communal-M" = "communal_normal",
-               "Communal-H" = "communal_high",
+               "DiscussM" = "viewdiscussions_normal",
+               "CommunalM" = "communal_normal",
+               "CommunalH" = "communal_high",
                )
 
 ##### Correlation analysis https://statsandr.com/blog/correlation-coefficient-and-correlation-test-in-r/ 
@@ -121,11 +121,10 @@ activities
 motifs$userID <- as.factor(motifs$userID)
 motifs$level <- as.factor(motifs$level)
 
-M_all <- glmer(promoted ~ Explore + `Discuss-H` + `Classify-M` + Learn + Personal + `Classify-H` + Social + `Classify-L` + `Discuss-M` + `Communal-M`+ `Communal-H` + 
+M_all <- glmer(promoted ~ Explore + Learn + Personal + Social + ClassifyL + ClassifyM +ClassifyH + DiscussM + DiscussH + CommunalM + CommunalH + 
     (1 | level) + (1 | userID), 
     data = motifs, family = binomial, 
     control = glmerControl(optimizer = "bobyqa"))
-MuMIn::r.squaredGLMM(M_all)
 
 #####################
 ###### LEVEL 1 ###### 
@@ -138,7 +137,7 @@ trainIndex_l1 <- createDataPartition(motifs_l1$promoted, p = .7,
 train_l1 <- motifs_l1[ trainIndex_l1,]
 valid_l1 <- motifs_l1[-trainIndex_l1,]
 
-M1 <- glm(promoted ~ Explore + `Discuss-H` + `Classify-M` + Learn + Personal + `Classify-H` + Social + `Classify-L` + `Discuss-M` + `Communal-M`+ `Communal-H`, data = train_l1, family = "binomial")
+M1 <- glm(promoted ~ Explore + Learn + Personal + Social + ClassifyL + ClassifyM +ClassifyH + DiscussM + DiscussH + CommunalM + CommunalH, data = train_l1, family = "binomial")
 
 logit2prob(coef(M1))
 nagelkerke(M1) # performance 
@@ -164,7 +163,7 @@ trainIndex_l2 <- createDataPartition(motifs_l2$promoted, p = .7,
 train_l2 <- motifs_l2[ trainIndex_l2,]
 valid_l2 <- motifs_l2[-trainIndex_l2,]
 
-M2 <- glm(promoted ~ Explore + `Discuss-H` + `Classify-M` + Learn + Personal + `Classify-H` + Social + `Classify-L` + `Discuss-M` + `Communal-M`+ `Communal-H`, data = train_l2, family = "binomial")
+M2 <- glm(promoted ~ Explore + Learn + Personal + Social + ClassifyL + ClassifyM +ClassifyH + DiscussM + DiscussH + CommunalM + CommunalH, data = train_l2, family = "binomial")
 
 logit2prob(coef(M2))
 nagelkerke(M2) # performance 
@@ -189,7 +188,7 @@ trainIndex_l3 <- createDataPartition(motifs_l3$promoted, p = .7,
 train_l3 <- motifs_l3[ trainIndex_l3,]
 valid_l3 <- motifs_l3[-trainIndex_l3,]
 
-M3 <- glm(promoted ~ Explore + `Discuss-H` + `Classify-M` + Learn + Personal + `Classify-H` + Social + `Classify-L` + `Discuss-M` + `Communal-M`+ `Communal-H`, data = train_l3, family = "binomial")
+M3 <- glm(promoted ~ Explore + Learn + Personal + Social + ClassifyL + ClassifyM +ClassifyH + DiscussM + DiscussH + CommunalM + CommunalH, data = train_l3, family = "binomial")
 
 logit2prob(coef(M3))
 nagelkerke(M3) # performance 
@@ -213,7 +212,7 @@ trainIndex_l4 <- createDataPartition(motifs_l4$promoted, p = .7,
 train_l4 <- motifs_l4[ trainIndex_l4,]
 valid_l4 <- motifs_l4[-trainIndex_l4,]
 
-M4 <- glm(promoted ~ Explore + `Discuss-H` + `Classify-M` + Learn + Personal + `Classify-H` + Social + `Classify-L` + `Discuss-M` + `Communal-M`+ `Communal-H`, data = train_l4, family = "binomial")
+M4 <- glm(promoted ~ Explore + Learn + Personal + Social + ClassifyL + ClassifyM +ClassifyH + DiscussM + DiscussH + CommunalM + CommunalH, data = train_l4, family = "binomial")
 
 logit2prob(coef(M4))
 nagelkerke(M4) # performance 
@@ -237,23 +236,17 @@ confusionMatrix(data = factor(as.numeric(predict_l4>0.5)), reference = factor(va
 
 
 ```{r models-report, results = "asis", echo=FALSE, include=FALSE}
-stargazer(M1,M2,M3,M4, type="html",font.size = "normalsize",
-          # ^  Notice M2 is called twice. I'm going somewhere with this.
-          # Below: manually supply tidied coefficients and standard errors
-          # Omit model statistics by default...
-    
+stargazer(M1,M2,M3,M4, type="latex",font.size = "normalsize",
           #add.lines = lapply(1:nrow(mod_stats), function(i) unlist(mod_stats[i, ])),
           covariate.labels = c("Explore","Discuss(H)","Classify(M)", "Learn", "Personal", "Classify(H)","Social","Classify(L)","Discuss(M)","Communal(M)","Communal(H)","Constant"),
-          notes="<small>Data: ESS, Round 9 (United Kingdom)</small>",
+          # notes="<small>Data: ESS, Round 9 (United Kingdom)</small>",
           dep.var.labels="Promoted to Level",
            model.names = FALSE,
           omit.stat=c("f", "ser"),
-          column.sep.width = "-8pt",
+          column.sep.width = "8pt",
           single.row = TRUE,
-          column.labels = c("All Workflows", "Workflow 1", "Workflow 2","Workflow 3","Workflow 4")
+          column.labels = c("L1 to L2", "L2 to L3", "L3 to L4","L4 to L5")
           )
-
-#R-Squared: `r MuMIn::r.squaredGLMM(M_all,null.RE = TRUE)`       
 
 ```
 
@@ -262,4 +255,131 @@ stargazer(M1,M2,M3,M4, type="html",font.size = "normalsize",
 tab_model(M1,M2,M3,M4)
 
 ```
+
+# Models with oversampling 
+
+ROSE (Random Over-Sampling Examples) aids the task of binary classification in the presence of rare classes. It produces a synthetic, possibly balanced, sample of data simulated according to a smoothed-bootstrap approach.
+
+```{r}
+library(ROSE) # for downsampling
+train_l1rose <- train_l1 %>%
+  dplyr::select(c(promoted,Explore,Learn,Personal,Social,ClassifyL,ClassifyM,ClassifyH,DiscussM,DiscussH,CommunalM,CommunalH))
+
+ data_rosel1 <- ROSE(promoted~. , data=train_l1rose)$data
+    # check (im)balance of new data
+    table(data_rosel1$promoted)
+    
+    
+# train logistic regression on balanced data
+    rose_modell1 <- glm(promoted ~ ., data=data_rosel1, family="binomial")
+    # use the trained model to predict test data
+    rose_predl1 <- predict(rose_modell1, newdata=valid_l1,
+                                type="response")
+    
+    roc_predl1 <- prediction(predictions = rose_predl1  , labels = valid_l1$promoted)
+    roc_perfl1 <- performance(roc_predl1 , "tpr" , "fpr")
+        
+    plot(roc_perfl1,
+     colorize = TRUE,
+     print.cutoffs.at= seq(0,1,0.05),
+     text.adj=c(-0.2,1.7))
+
+    roc.curve(valid_l1$promoted, rose_predl1, add.roc=TRUE, col=3)
+    
+confusionMatrix(data = factor(as.numeric(rose_predl1>0.45)),
+                reference =  factor(valid_l1$promoted))
+
+
+### 2
+
+train_l2rose <- train_l2 %>%
+  dplyr::select(c(promoted,Explore,Learn,Personal,Social,ClassifyL,ClassifyM,ClassifyH,DiscussM,DiscussH,CommunalM,CommunalH))
+
+ data_rosel2 <- ROSE(promoted~. , data=train_l2rose)$data
+    # check (im)balance of new data
+    table(data_rosel2$promoted)
+    
+    
+# train logistic regression on balanced data
+    rose_modell2 <- glm(promoted ~ ., data=data_rosel2, family="binomial")
+    # use the trained model to predict test data
+    rose_predl2 <- predict(rose_modell2, newdata=valid_l2,
+                                type="response")
+    
+    roc_predl2 <- prediction(predictions = rose_predl2  , labels = valid_l2$promoted)
+    roc_perfl2 <- performance(roc_predl2 , "tpr" , "fpr")
+        
+    plot(roc_perfl2,
+     colorize = TRUE,
+     print.cutoffs.at= seq(0,1,0.05),
+     text.adj=c(-0.2,1.7))
+
+    roc.curve(valid_l2$promoted, rose_predl2, add.roc=TRUE, col=3)
+    
+confusionMatrix(data = factor(as.numeric(rose_predl2>0.5)),
+                reference =  factor(valid_l2$promoted))
+
+
+### 3
+
+train_l3rose <- train_l3 %>%
+  dplyr::select(c(promoted,Explore,Learn,Personal,Social,ClassifyL,ClassifyM,ClassifyH,DiscussM,DiscussH,CommunalM,CommunalH))
+
+ data_rosel3 <- ROSE(promoted~. , data=train_l3rose)$data
+    # check (im)balance of new data
+    table(data_rosel3$promoted)
+    
+    
+# train logistic regression on balanced data
+    rose_modell3 <- glm(promoted ~ ., data=data_rosel3, family="binomial")
+    # use the trained model to predict test data
+    rose_predl3 <- predict(rose_modell3, newdata=valid_l3,
+                                type="response")
+    
+    roc_predl3 <- prediction(predictions = rose_predl3  , labels = valid_l3$promoted)
+    roc_perfl3 <- performance(roc_predl3 , "tpr" , "fpr")
+        
+    plot(roc_perfl3,
+     colorize = TRUE,
+     print.cutoffs.at= seq(0,1,0.05),
+     text.adj=c(-0.2,1.7))
+
+    roc.curve(valid_l3$promoted, rose_predl3, add.roc=TRUE, col=3)
+    
+confusionMatrix(data = factor(as.numeric(rose_predl3>0.5)),
+                reference =  factor(valid_l3$promoted))
+
+## 4
+
+train_l4rose <- train_l4 %>%
+  dplyr::select(c(promoted,Explore,Learn,Personal,Social,ClassifyL,ClassifyM,ClassifyH,DiscussM,DiscussH,CommunalM,CommunalH))
+
+ data_rosel4 <- ROSE(promoted~. , data=train_l4rose)$data
+    # check (im)balance of new data
+    table(data_rosel4$promoted)
+    
+    
+# train logistic regression on balanced data
+    rose_modell4 <- glm(promoted ~ ., data=data_rosel4, family="binomial")
+    # use the trained model to predict test data
+    rose_predl4 <- predict(rose_modell4, newdata=valid_l4,
+                                type="response")
+    
+    roc_predl4 <- prediction(predictions = rose_predl4  , labels = valid_l4$promoted)
+    roc_perfl4 <- performance(roc_predl4 , "tpr" , "fpr")
+        
+    plot(roc_perfl4,
+     colorize = TRUE,
+     print.cutoffs.at= seq(0,1,0.05),
+     text.adj=c(-0.2,1.7))
+
+    roc.curve(valid_l4$promoted, rose_predl4, add.roc=TRUE, col=3)
+    
+confusionMatrix(data = factor(as.numeric(rose_predl4>0.5)),
+                reference =  factor(valid_l4$promoted))
+```
+
+
+
+
 
