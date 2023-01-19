@@ -56,9 +56,9 @@ motifs$prom <- NULL
 motifs <- motifs[which(motifs$level>0 & motifs$level < 5 & motifs$level !=0),]
 
 motifs <- motifs %>% 
-        rename("Explore" = "exploring",
-               "DiscussH" = "viewdiscussions_high",
-               "ClassifyM" = "classify_mid",
+        dplyr::rename("Explore" = "exploring",
+               "Discuss-H" = "viewdiscussions_high",
+               "Classify-M" = "classify_mid",
                "Learn" = "learning",
                "Personal" = "personal",
                "ClassifyH" = "classify_high",
@@ -67,12 +67,15 @@ motifs <- motifs %>%
                "DiscussM" = "viewdiscussions_normal",
                "CommunalM" = "communal_normal",
                "CommunalH" = "communal_high",
+               "Discuss-M" = "viewdiscussions_normal",
+               "Communal-M" = "communal_normal",
+               "Communal-H" = "communal_high"
                )
 
 ##### Correlation analysis https://statsandr.com/blog/correlation-coefficient-and-correlation-test-in-r/ 
 
 # Scale values
-motifs2 <- motifs %>% summarise(across(c(19,3,5:7,9,10,12:16,18), scale))
+motifs2 <- motifs %>% dplyr::summarise(across(c(19,3,5:7,9,10,12:16,18), scale))
 motifs3 <- motifs[,c(19,3,5:7,9,10,12:16,18)]
 motifs3 <- data.frame(motifs3)
 
